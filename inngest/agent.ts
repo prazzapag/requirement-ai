@@ -18,7 +18,12 @@ const agentNetwork = createNetwork<RequirementProcessingState>({
       max_tokens: 1000,
     },
   }),
-  defaultRouter: ({ network }) => {
+  defaultRouter: ({ network, callCount }) => {
+
+    if (callCount === 0){
+      return requirementScannerAgent;
+    }
+
     const isComplete =
       network.state.data.savedToDatabase ||
       network.state.data.processingComplete;
