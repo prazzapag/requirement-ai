@@ -26,7 +26,8 @@ const agentNetwork = createNetwork<RequirementProcessingState>({
       //Terminate the agent process if the data has been saved to the database
       return undefined;
     }
-    return getDefaultRoutingAgent();
+    // return getDefaultRoutingAgent();
+    return;
   },
 });
 
