@@ -3,7 +3,6 @@ import {
   createNetwork,
   getDefaultRoutingAgent,
 } from "@inngest/agent-kit";
-import { createServer } from "@inngest/agent-kit/server";
 import { inngest } from "./client";
 import Events from "./constants";
 import { databaseAgent } from "./agents/databaseAgent";
@@ -14,7 +13,7 @@ const agentNetwork = createNetwork<RequirementProcessingState>({
   name: "Agent Team",
   agents: [databaseAgent, requirementScannerAgent],
   defaultModel: anthropic({
-    model: "claude-3-5-sonnet-latest",
+    model: "claude-sonnet-5",
     defaultParameters: {
       max_tokens: 1000,
     },
@@ -31,16 +30,11 @@ const agentNetwork = createNetwork<RequirementProcessingState>({
   },
 });
 
-export const server = createServer({
-  agents: [databaseAgent, requirementScannerAgent],
-  networks: [agentNetwork],
-});
-
 export const extractAndSavePdf = inngest.createFunction(
   {
     id: "Extract PDF and save in Database",
+    triggers: [{ event: Events.EXTRACT_DATA_FROM_PDF_AND_SAVE_TO_DATABASE }],
   },
-  { event: Events.EXTRACT_DATA_FROM_PDF_AND_SAVE_TO_DATABASE },
   async ({ event }) => {
     const result = await agentNetwork.run(
       `You are an expert systems requirement analyser in an automotive industry responsible for extracting system requirements from a stakeholder requirement. Extract the key data like the requirement, requirement type, safety relevance from this pdf:${event.data.url}. Once the data is extracted, save it to the database using the requirementId:${event.data.requirementId}. Once the requirement is successfully saved to the database, you can terminate the agent process.`,
