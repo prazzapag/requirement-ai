@@ -20,19 +20,36 @@ const agentNetwork = createNetwork<RequirementProcessingState>({
   }),
   defaultRouter: ({ network, callCount }) => {
 
-    if (callCount === 0){
-      return requirementScannerAgent;
-    }
+    // if (callCount === 0){
+    //   return requirementScannerAgent;
+    // }
 
-    const isComplete =
-      network.state.data.savedToDatabase ||
-      network.state.data.processingComplete;
+    // const isComplete =
+    //   network.state.data.savedToDatabase ||
+    //   network.state.data.processingComplete;
+    // if (isComplete) {
+    //   //Terminate the agent process if the data has been saved to the database
+    //   return undefined;
+    // }
+    // // return getDefaultRoutingAgent();
+    // return;
+
+    const data = network.state.data;
+
+    // 2. Strict terminal check
+    const isComplete = data?.savedToDatabase === true || data?.processingComplete === true;
     if (isComplete) {
-      //Terminate the agent process if the data has been saved to the database
       return undefined;
     }
-    // return getDefaultRoutingAgent();
-    return;
+
+    // 3. Hand off to database agent once scanner populates the state data
+    // (Ensure your scanner agent writes its findings to data.extractedData)
+    if (data?.extractedData && !data?.savedToDatabase) {
+      return databaseAgent;
+    }
+
+    // 4. Default starting point (or fallback to keep scanning if data isn't ready)
+    return requirementScannerAgent;
   },
 });
 
