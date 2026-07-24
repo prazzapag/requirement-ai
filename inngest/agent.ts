@@ -42,6 +42,11 @@ const agentNetwork = createNetwork<RequirementProcessingState>({
       return undefined;
     }
 
+    // Terminate the run if a step reported an error instead of looping.
+    if (data?.error) {
+      return undefined;
+    }
+
     // 3. Hand off to database agent once scanner populates the state data
     // (Ensure your scanner agent writes its findings to data.extractedData)
     if (data?.extractedData && !data?.savedToDatabase) {

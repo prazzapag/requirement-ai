@@ -9,7 +9,7 @@ const parsePdfTool = createTool({
   parameters: z.object({
     pdfUrl: z.string(),
   }) as any,
-  handler: async ({ pdfUrl }, { step }) => {
+  handler: async ({ pdfUrl }, { step, network }) => {
     try {
       const result = await step?.ai.infer("parse-pdf", {
         model: anthropic({
@@ -91,7 +91,45 @@ Extract the following information and format as JSON:
           ],
         },
       });
-      return result;
+
+      const textBlock = result?.content?.find(
+        (block: any): block is { type: "text"; text: string } =>
+          block?.type === "text" && typeof block?.text === "string",
+      );
+      const rawText = textBlock?.text?.trim();
+
+      if (!rawText) {
+        const error = "PDF parsing returned no text content from the model";
+        network.state.data = {
+          ...network.state.data,
+          error,
+        } as RequirementProcessingState;
+        throw new Error(error);
+      }
+
+      const jsonText = rawText.replace(/^```(?:json)?\s*|\s*```$/g, "");
+      try {
+        JSON.parse(jsonText);
+      } catch (parseError) {
+        const error = `Failed to parse extracted PDF data as JSON: ${
+          parseError instanceof Error ? parseError.message : String(parseError)
+        }`;
+        network.state.data = {
+          ...network.state.data,
+          error,
+        } as RequirementProcessingState;
+        throw new Error(error);
+      }
+
+      network.state.data = {
+        ...network.state.data,
+        extractedData: jsonText,
+      } as RequirementProcessingState;
+
+      return {
+        status: "success",
+        message: "PDF parsed successfully and requirement data extracted.",
+      };
     } catch (error) {
       console.error(error);
       throw error;

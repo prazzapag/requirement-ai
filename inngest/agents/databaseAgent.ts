@@ -124,8 +124,6 @@ const saveToDatabaseTool = createTool({
         status: "Database operation failed",
       };
     }
-
-    return result;
   },
 });
 
