@@ -135,7 +135,7 @@ export const databaseAgent = createAgent<RequirementProcessingState>({
   model: openai({
     model: "gpt-4o-mini",
     defaultParameters: {
-      max_completion_tokens: 1000,
+      max_completion_tokens: 4000,
     },
   }),
   tools: [saveToDatabaseTool],

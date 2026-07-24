@@ -15,7 +15,7 @@ const parsePdfTool = createTool({
         model: anthropic({
           model: "claude-sonnet-5",
           defaultParameters: {
-            max_tokens: 4096,
+            max_tokens: 8192,
           },
         }) as any,
         body: {
